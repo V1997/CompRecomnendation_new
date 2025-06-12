@@ -1,24 +1,27 @@
 "use client";
 
 import { useState } from 'react';
-import { Header } from "./components/Header";
-import { PropertySearch } from "./components/PropertySearch";
-import { Dashboard } from "./components/Dashboard";
+import { Header } from "../components/Header";
+import { PropertySearch } from "../components/PropertySearch";
+import { Dashboard } from "../components/Dashboard";
 import { CompRecommendation, SubjectProperty, AppraisalResponse } from '@/types';
 import { propertyAPI } from '@/lib/api';
 import { calculateDistance, calculateDaysSince } from '@/lib/utils';
 
-export default function Home() {
+export default function RecommendationsPage() {
   const [subjectProperty, setSubjectProperty] = useState<SubjectProperty | null>(null);
   const [recommendations, setRecommendations] = useState<CompRecommendation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [performanceMetrics, setPerformanceMetrics] = useState<any>(null);
+  const [useOptimizedEngine, setUseOptimizedEngine] = useState(true);
 
   const handlePropertySearch = async (property: SubjectProperty) => {
     console.log('handlePropertySearch called with:', property);
     setSubjectProperty(property);
     setIsLoading(true);
     setError(null);
+    setPerformanceMetrics(null);
 
     try {
       // Transform frontend data to backend API format
@@ -42,11 +45,28 @@ export default function Home() {
         estimated_value: property.estimatedValue,
       };
 
-      console.log('Calling Optimized API with subject property:', apiSubjectProperty);
+      console.log(`Calling ${useOptimizedEngine ? 'Optimized' : 'Smart'} API with subject property:`, apiSubjectProperty);
       
-      // Use Optimized API that uses pre-computed embeddings for instant recommendations
-      const response = await propertyAPI.getOptimizedRecommendations(apiSubjectProperty);
-      console.log('Optimized API response received:', response);
+      const startTime = performance.now();
+      let response: AppraisalResponse;
+      
+      if (useOptimizedEngine) {
+        response = await propertyAPI.getOptimizedRecommendations(apiSubjectProperty);
+      } else {
+        response = await propertyAPI.getSmartRecommendations(apiSubjectProperty);
+      }
+      
+      const endTime = performance.now();
+      const clientTime = endTime - startTime;
+      
+      console.log(`${useOptimizedEngine ? 'Optimized' : 'Smart'} API response received:`, response);
+      
+      // Store performance metrics
+      setPerformanceMetrics({
+        ...response.performance_metrics,
+        client_time: clientTime,
+        engine_type: useOptimizedEngine ? 'optimized_numpy_sklearn' : 'smart_legacy'
+      });
       
       // Transform backend response to frontend format
       const transformedRecommendations: CompRecommendation[] = response.recommendations.map(rec => {
@@ -78,7 +98,7 @@ export default function Home() {
             longitude: rec.property.longitude,
             neighborhood: rec.property.neighborhood,
             features: rec.property.features,
-            similarityScore: rec.overall_score, // Use overall_score from ML model
+            similarityScore: rec.overall_score,
             distanceFromSubject: distance,
             daysSinceSale: daysSinceSale,
             adjustments: {
@@ -100,9 +120,9 @@ export default function Home() {
       setRecommendations(transformedRecommendations);
 
     } catch (err) {
-      console.error('Optimized API call failed:', err);
+      console.error(`${useOptimizedEngine ? 'Optimized' : 'Smart'} API call failed:`, err);
       setError('Unable to find comparable properties from our dataset. Please try adjusting your search criteria or try again later.');
-      setRecommendations([]); // Clear any previous recommendations
+      setRecommendations([]);
     } finally {
       setIsLoading(false);
     }
@@ -114,7 +134,84 @@ export default function Home() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
+          {/* Engine Selection */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">🚀 Recommendation Engine</h2>
+            <div className="flex items-center space-x-6">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="engine"
+                  checked={useOptimizedEngine}
+                  onChange={() => setUseOptimizedEngine(true)}
+                  className="mr-2"
+                />
+                <span className="text-sm font-medium">
+                  ⚡ Optimized Engine (NumPy + scikit-learn)
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="engine"
+                  checked={!useOptimizedEngine}
+                  onChange={() => setUseOptimizedEngine(false)}
+                  className="mr-2"
+                />
+                <span className="text-sm font-medium">
+                  🔄 Legacy Smart Engine
+                </span>
+              </label>
+            </div>
+            <p className="text-xs text-gray-600 mt-2">
+              {useOptimizedEngine 
+                ? "Uses pre-computed embeddings for instant similarity search (~25ms)" 
+                : "Traditional approach with full dataset processing (~200ms+)"
+              }
+            </p>
+          </div>
+
           <PropertySearch onSearch={handlePropertySearch} />
+          
+          {/* Performance Metrics */}
+          {performanceMetrics && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-green-800 mb-3">
+                📊 Performance Metrics
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {performanceMetrics.processing_time?.toFixed(2) || 'N/A'}ms
+                  </div>
+                  <div className="text-sm text-green-700">Core Processing</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {performanceMetrics.client_time?.toFixed(2) || 'N/A'}ms
+                  </div>
+                  <div className="text-sm text-green-700">Total API Time</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {performanceMetrics.total_candidates?.toLocaleString() || 'N/A'}
+                  </div>
+                  <div className="text-sm text-green-700">Properties Evaluated</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {performanceMetrics.confidence?.toFixed(1) || 'N/A'}%
+                  </div>
+                  <div className="text-sm text-green-700">Confidence</div>
+                </div>
+              </div>
+              <div className="mt-4 text-sm text-green-700">
+                <div><strong>Engine:</strong> {performanceMetrics.engine_type}</div>
+                <div><strong>Search Method:</strong> {performanceMetrics.search_method || 'N/A'}</div>
+                <div><strong>Dataset Loading:</strong> {performanceMetrics.dataset_loading ? 'Yes' : 'No'}</div>
+              </div>
+            </div>
+          )}
           
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -139,7 +236,10 @@ export default function Home() {
               <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 <span className="ml-3 text-lg font-medium text-gray-700">
-                  Searching our database of 7,388+ properties with optimized engine...
+                  {useOptimizedEngine 
+                    ? "🚀 Searching 7,388+ properties with optimized engine..." 
+                    : "🔄 Searching database with legacy engine..."
+                  }
                 </span>
               </div>
             </div>

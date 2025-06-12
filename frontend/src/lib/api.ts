@@ -8,7 +8,37 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 second timeout
 });
+
+// Request interceptor for logging and performance monitoring
+apiClient.interceptors.request.use(
+  (config) => {
+    (config as any).metadata = { startTime: new Date() };
+    console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+    return config;
+  },
+  (error) => {
+    console.error('API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for logging and error handling
+apiClient.interceptors.response.use(
+  (response) => {
+    const endTime = new Date();
+    const duration = endTime.getTime() - (response.config as any).metadata.startTime.getTime();
+    console.log(`✅ API Response: ${response.status} in ${duration}ms - ${response.config.method?.toUpperCase()} ${response.config.url}`);
+    return response;
+  },
+  (error) => {
+    const endTime = new Date();
+    const duration = (error.config as any)?.metadata ? endTime.getTime() - (error.config as any).metadata.startTime.getTime() : 0;
+    console.error(`❌ API Error: ${error.response?.status || 'Network'} in ${duration}ms - ${error.config?.method?.toUpperCase()} ${error.config?.url}`, error.response?.data);
+    return Promise.reject(error);
+  }
+);
 
 export const propertyAPI = {
   // Get property recommendations (standard)
@@ -42,6 +72,27 @@ export const propertyAPI = {
     } catch (error) {
       console.warn('Smart recommendations failed:', error);
       throw error; // Don't fallback to mock data anymore
+    }
+  },
+
+  // Get optimized ML recommendations (fastest, production-ready)
+  getOptimizedRecommendations: async (subjectProperty: any): Promise<AppraisalResponse> => {
+    try {
+      const request = {
+        subject_property: subjectProperty,
+        max_distance: 50.0,  // 50 mile radius  
+        max_days_since_sale: 730  // 2 years
+      };
+      const response = await apiClient.post('/api/dataset/recommendations/optimized/', request);
+      return response.data;
+    } catch (error) {
+      console.warn('Optimized recommendations failed, falling back to smart recommendations:', error);
+      // Fallback to smart recommendations if optimized fails
+      return await apiClient.post('/api/dataset/recommendations/smart/', {
+        subject_property: subjectProperty,
+        max_distance: 50.0,
+        max_days_since_sale: 730
+      }).then(res => res.data);
     }
   },
 

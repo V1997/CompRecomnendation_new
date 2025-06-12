@@ -1,0 +1,37 @@
+{
+  "generation_info": {
+    "timestamp": 1749763567.4039624,
+    "generation_time_seconds": 6.779392719268799,
+    "method": "numpy_sklearn_vectorized",
+    "dependencies": [
+      "numpy",
+      "scikit-learn"
+    ],
+    "no_additional_installs": true
+  },
+  "dataset_info": {
+    "total_properties": 7388,
+    "embedding_dimension": 16,
+    "data_type": "float32"
+  },
+  "memory_info": {
+    "embeddings_size_bytes": 472832,
+    "embeddings_size_kb": 461.75,
+    "embeddings_size_mb": 0.450927734375,
+    "metadata_estimated_kb": 2583.5810546875
+  },
+  "performance_estimates": {
+    "expected_query_time_ms": "2-10ms for 7,388 properties",
+    "time_complexity": "O(n) linear search",
+    "search_method": "vectorized_cosine_similarity",
+    "accuracy": "100% (exact similarity computation)"
+  },
+  "embedding_statistics": {
+    "min_value": -737.5623168945312,
+    "max_value": 140308.1875,
+    "mean_value": 9759.525390625,
+    "std_value": 33158.43359375,
+    "has_nan_values": false,
+    "has_inf_values": false
+  }
+}
