@@ -181,3 +181,57 @@ export interface ModelPerformance {
     averageScore: number;
   };
 }
+
+export interface OptimizedAppraisalResponse {
+  subject_property: {
+    id: string;
+    address: string;
+    property_type: string;
+    structure_type: string;
+    gla: number;
+    lot_size: number;
+    bedrooms: number;
+    bathrooms: number;
+    year_built: number;
+    condition: string;
+    quality: string;
+    latitude: number;
+    longitude: number;
+    neighborhood?: string;
+    features?: string[];
+    appraisal_date: string;
+    estimated_value?: number;
+  };
+  recommendations: {
+    property: {
+      id: string;
+      address: string;
+      property_type: string;
+      structure_type?: string;
+      gla: number;
+      lot_size: number;
+      bedrooms: number;
+      bathrooms: number;
+      year_built: number;
+      condition: string;
+      quality: string;
+      latitude: number;
+      longitude: number;
+      neighborhood?: string;
+      features?: string[];
+      sale_date: string;
+      sale_price: number;
+    };
+    similarity_score: number;
+    rank: number;
+    explanation?: string;
+    search_method?: string;
+  }[];
+  metadata: {
+    total_api_response_time_ms: number;
+    engine_processing_time_ms: number;
+    dataset_size: number;
+    search_method: string;
+    engine_type: string;
+  };
+}

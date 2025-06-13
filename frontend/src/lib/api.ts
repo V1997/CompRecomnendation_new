@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AppraisalRequest, AppraisalResponse, UserFeedback, ModelPerformance } from '@/types';
+import { AppraisalRequest, AppraisalResponse, OptimizedAppraisalResponse, UserFeedback, ModelPerformance } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -41,92 +41,14 @@ apiClient.interceptors.response.use(
 );
 
 export const propertyAPI = {
-  // Get property recommendations (standard)
-  getRecommendations: async (request: AppraisalRequest): Promise<AppraisalResponse> => {
-    const response = await apiClient.post('/api/recommendations/', request);
-    return response.data;
-  },
-
-  // Get enhanced ML recommendations
-  getEnhancedRecommendations: async (request: AppraisalRequest): Promise<AppraisalResponse> => {
-    try {
-      const response = await apiClient.post('/api/dataset/recommendations/enhanced/', request);
-      return response.data;
-    } catch (error) {
-      // Fallback to standard recommendations if enhanced fails
-      console.warn('Enhanced ML recommendations failed, falling back to standard:', error);
-      return await apiClient.post('/api/recommendations/', request).then(res => res.data);
-    }
-  },
-
-  // Get smart recommendations (finds candidates automatically from dataset)
-  getSmartRecommendations: async (subjectProperty: any): Promise<AppraisalResponse> => {
-    try {
-      const request = {
-        subject_property: subjectProperty,
-        max_distance: 50.0,  // 50 mile radius
-        max_days_since_sale: 730  // 2 years
-      };
-      const response = await apiClient.post('/api/dataset/recommendations/smart/', request);
-      return response.data;
-    } catch (error) {
-      console.warn('Smart recommendations failed:', error);
-      throw error; // Don't fallback to mock data anymore
-    }
-  },
-
   // Get optimized ML recommendations (fastest, production-ready)
-  getOptimizedRecommendations: async (subjectProperty: any): Promise<AppraisalResponse> => {
-    try {
-      const request = {
-        subject_property: subjectProperty,
-        max_distance: 50.0,  // 50 mile radius  
-        max_days_since_sale: 730  // 2 years
-      };
-      const response = await apiClient.post('/api/dataset/recommendations/optimized/', request);
-      return response.data;
-    } catch (error) {
-      console.warn('Optimized recommendations failed, falling back to smart recommendations:', error);
-      // Fallback to smart recommendations if optimized fails
-      return await apiClient.post('/api/dataset/recommendations/smart/', {
-        subject_property: subjectProperty,
-        max_distance: 50.0,
-        max_days_since_sale: 730
-      }).then(res => res.data);
-    }
-  },
-
-  // Submit user feedback
-  submitFeedback: async (feedback: UserFeedback): Promise<void> => {
-    await apiClient.post('/api/feedback/', feedback);
-  },
-
-  // Get model performance metrics
-  getPerformanceMetrics: async (startDate?: string, endDate?: string): Promise<ModelPerformance> => {
-    const body = startDate && endDate ? { start_date: startDate, end_date: endDate } : {};
-    const response = await apiClient.post('/api/performance/', body);
-    return response.data;
-  },
-
-  // Upload appraisal data for training
-  uploadAppraisalData: async (file: File): Promise<void> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    await apiClient.post('/api/upload/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  },
-
-  // Retrain model with new data
-  retrainModel: async (): Promise<void> => {
-    await apiClient.post('/api/retrain');
-  },
-
-  // Get explanation for a specific recommendation
-  getExplanation: async (subjectId: string, compId: string): Promise<any> => {
-    const response = await apiClient.get(`/api/explanation/${subjectId}/${compId}`);
+  getOptimizedRecommendations: async (subjectProperty: any): Promise<OptimizedAppraisalResponse> => {
+    const request = {
+      subject_property: subjectProperty,
+      max_distance: 50.0,  // 50 mile radius  
+      max_days_since_sale: 730  // 2 years
+    };
+    const response = await apiClient.post('/api/v1/dataset/recommendations/optimized/', request);
     return response.data;
   },
 
