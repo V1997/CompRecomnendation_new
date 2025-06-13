@@ -7,7 +7,7 @@ from app.schemas.property import (
     AppraisalRequest, AppraisalResponse, CompRecommendation,
     PerformanceMetrics, AppraisalExplanations
 )
-from app.ml.recommendation_engine import recommendation_engine
+from app.ml.optimized_recommendation_engine import optimized_engine as recommendation_engine
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
