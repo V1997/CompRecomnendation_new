@@ -65,3 +65,6 @@ coverage/
 *.orig
 *.rej
 .pytest_cache/
+
+# Presentation materials (local only)
+presentation/
