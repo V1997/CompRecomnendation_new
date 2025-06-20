@@ -3,45 +3,21 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
 
-class PropertyType(str, Enum):
-    SINGLE_FAMILY = "Single Family"
-    TOWNHOUSE = "Townhouse"
-    CONDOMINIUM = "Condominium"
-    MULTI_FAMILY = "Multi-Family"
-
 class StructureType(str, Enum):
     DETACHED = "Detached"
     ATTACHED = "Attached"
     SEMI_DETACHED = "Semi-Detached"
 
-class Condition(str, Enum):
-    EXCELLENT = "Excellent"
-    GOOD = "Good"
-    AVERAGE = "Average"
-    FAIR = "Fair"
-    POOR = "Poor"
-
-class Quality(str, Enum):
-    SUPERIOR = "Superior"
-    GOOD = "Good"
-    AVERAGE = "Average"
-    BELOW_AVERAGE = "Below Average"
-
 class PropertyBase(BaseModel):
     address: str
-    property_type: PropertyType
     structure_type: StructureType
     gla: int = Field(..., description="Gross Living Area in square feet")
     lot_size: int = Field(..., description="Lot size in square feet")
     bedrooms: int
     bathrooms: float
     year_built: int
-    condition: Condition
-    quality: Quality
     latitude: float
     longitude: float
-    neighborhood: Optional[str] = None
-    features: Optional[List[str]] = []
 
 class Property(PropertyBase):
     id: str
@@ -50,13 +26,11 @@ class Property(PropertyBase):
 
 class SubjectProperty(PropertyBase):
     id: str
-    appraisal_date: datetime
     estimated_value: Optional[int] = None
 
 class Adjustments(BaseModel):
     gla_adjustment: float = 0
     lot_size_adjustment: float = 0
-    condition_adjustment: float = 0
     location_adjustment: float = 0
     time_adjustment: float = 0
 

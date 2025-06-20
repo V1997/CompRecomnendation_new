@@ -18,24 +18,18 @@ export default function Home() {
     setError(null);
 
     try {
-      // Transform to API format
+      // Transform to API format - streamlined to match ML usage
       const apiSubjectProperty = {
         id: property.id,
         address: property.address,
-        property_type: property.propertyType,
         structure_type: property.structureType,
         gla: property.gla,
         lot_size: property.lotSize,
         bedrooms: property.bedrooms,
         bathrooms: property.bathrooms,
         year_built: property.yearBuilt,
-        condition: property.condition,
-        quality: property.quality,
         latitude: property.latitude,
         longitude: property.longitude,
-        neighborhood: property.neighborhood || null,
-        features: property.features || [],
-        appraisal_date: new Date(property.appraisalDate).toISOString(),
         estimated_value: property.estimatedValue || null,
       };
 

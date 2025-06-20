@@ -10,16 +10,12 @@ interface PropertySearchProps {
 export function PropertySearch({ onSearch }: PropertySearchProps) {
   const [formData, setFormData] = useState<Partial<SubjectProperty>>({
     address: '789 Calgary Trail, Calgary, AB',
-    propertyType: 'Single Family',
     structureType: 'Detached',
     gla: 2400,
     lotSize: 6000,
     bedrooms: 4,
     bathrooms: 3.0,
     yearBuilt: 2010,
-    condition: 'Good',
-    quality: 'Average',
-    appraisalDate: new Date().toISOString().split('T')[0],
     estimatedValue: 550000,
     latitude: 51.0447,  // Calgary coordinates
     longitude: -114.0719
@@ -42,26 +38,19 @@ export function PropertySearch({ onSearch }: PropertySearchProps) {
     try {
       // Get coordinates for the address
       const coordinates = getCoordinatesForAddress(formData.address || '');
-      const neighborhood = extractNeighborhood(formData.address || '');
       
-      // Create subject property for API
+      // Create subject property for API - streamlined to match ML usage
       const subjectProperty: SubjectProperty = {
         id: 'subject-001',
         address: formData.address || '',
-        propertyType: formData.propertyType || 'Single Family',
         structureType: formData.structureType || 'Detached',
         gla: formData.gla || 0,
         lotSize: formData.lotSize || 0,
         bedrooms: formData.bedrooms || 0,
         bathrooms: formData.bathrooms || 0,
         yearBuilt: formData.yearBuilt || 0,
-        condition: formData.condition || 'Good',
-        quality: formData.quality || 'Average',
         latitude: coordinates.lat,
         longitude: coordinates.lng,
-        neighborhood,
-        features: [],
-        appraisalDate: formData.appraisalDate || new Date().toISOString().split('T')[0],
         estimatedValue: formData.estimatedValue || 0,
       };
       
@@ -100,28 +89,6 @@ export function PropertySearch({ onSearch }: PropertySearchProps) {
     }
   };
 
-  // Helper function to extract neighborhood from address
-  const extractNeighborhood = (address: string) => {
-    const addressLower = address.toLowerCase();
-    
-    if (addressLower.includes('toronto')) return 'Toronto';
-    if (addressLower.includes('vancouver')) return 'Vancouver';
-    if (addressLower.includes('calgary')) return 'Calgary';
-    if (addressLower.includes('ottawa')) return 'Ottawa';
-    if (addressLower.includes('montreal')) return 'Montreal';
-    if (addressLower.includes('edmonton')) return 'Edmonton';
-    if (addressLower.includes('winnipeg')) return 'Winnipeg';
-    if (addressLower.includes('kingston')) return 'Kingston';
-    
-    // Extract city from address (assuming format: "123 Street, City, Province")
-    const parts = address.split(',');
-    if (parts.length >= 2) {
-      return parts[1].trim();
-    }
-    
-    return 'Unknown';
-  };
-
   return (
     <div className="bg-white rounded-xl shadow-lg p-8">
       <div className="flex items-center gap-3 mb-6">
@@ -130,7 +97,7 @@ export function PropertySearch({ onSearch }: PropertySearchProps) {
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Subject Property Details</h2>
-          <p className="text-gray-600">Enter the property details to find comparable properties</p>
+          <p className="text-gray-600">Enter essential property details for ML-powered comparable matching</p>
         </div>
       </div>
 
@@ -149,38 +116,20 @@ export function PropertySearch({ onSearch }: PropertySearchProps) {
           />
         </div>
 
-        {/* Property Type and Structure */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Property Type
-            </label>
-            <select
-              value={formData.propertyType || ''}
-              onChange={(e) => handleInputChange('propertyType', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="Single Family">Single Family</option>
-              <option value="Townhouse">Townhouse</option>
-              <option value="Condominium">Condominium</option>
-              <option value="Multi-Family">Multi-Family</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Structure Type
-            </label>
-            <select
-              value={formData.structureType || ''}
-              onChange={(e) => handleInputChange('structureType', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="Detached">Detached</option>
-              <option value="Attached">Attached</option>
-              <option value="Semi-Detached">Semi-Detached</option>
-            </select>
-          </div>
+        {/* Structure Type */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Structure Type
+          </label>
+          <select
+            value={formData.structureType || ''}
+            onChange={(e) => handleInputChange('structureType', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="Detached">Detached</option>
+            <option value="Attached">Attached</option>
+            <option value="Semi-Detached">Semi-Detached</option>
+          </select>
         </div>
 
         {/* Size and Layout */}
@@ -240,65 +189,17 @@ export function PropertySearch({ onSearch }: PropertySearchProps) {
         </div>
 
         {/* Property Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Year Built
-            </label>
-            <input
-              type="number"
-              value={formData.yearBuilt || ''}
-              onChange={(e) => handleInputChange('yearBuilt', parseInt(e.target.value) || 0)}
-              placeholder="2010"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Condition
-            </label>
-            <select
-              value={formData.condition || ''}
-              onChange={(e) => handleInputChange('condition', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="Poor">Poor</option>
-              <option value="Fair">Fair</option>
-              <option value="Good">Good</option>
-              <option value="Very Good">Very Good</option>
-              <option value="Excellent">Excellent</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Quality
-            </label>
-            <select
-              value={formData.quality || ''}
-              onChange={(e) => handleInputChange('quality', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="Basic">Basic</option>
-              <option value="Average">Average</option>
-              <option value="Good">Good</option>
-              <option value="Very Good">Very Good</option>
-              <option value="Excellent">Excellent</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Appraisal Date
-            </label>
-            <input
-              type="date"
-              value={formData.appraisalDate || ''}
-              onChange={(e) => handleInputChange('appraisalDate', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Year Built
+          </label>
+          <input
+            type="number"
+            value={formData.yearBuilt || ''}
+            onChange={(e) => handleInputChange('yearBuilt', parseInt(e.target.value) || 0)}
+            placeholder="2010"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
         </div>
 
         {/* Estimated Value */}

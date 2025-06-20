@@ -127,24 +127,18 @@ async def get_optimized_recommendations(request: SmartAppraisalRequest):
                 detail="Optimized recommendation engine not ready. Generate embeddings first: python scripts/generate_embeddings.py"
             )
         
-        # Extract subject property from request
+        # Extract subject property from request - streamlined to match schema
         subject = {
             "id": request.subject_property.id,
             "address": request.subject_property.address,
-            "property_type": request.subject_property.property_type,
             "structure_type": request.subject_property.structure_type,
             "gla": request.subject_property.gla,
             "lot_size": request.subject_property.lot_size,
             "bedrooms": request.subject_property.bedrooms,
             "bathrooms": float(request.subject_property.bathrooms),
             "year_built": request.subject_property.year_built,
-            "condition": request.subject_property.condition,
-            "quality": request.subject_property.quality,
             "latitude": float(request.subject_property.latitude),
             "longitude": float(request.subject_property.longitude),
-            "neighborhood": request.subject_property.neighborhood,
-            "features": request.subject_property.features or [],
-            "appraisal_date": request.subject_property.appraisal_date,
             "estimated_value": request.subject_property.estimated_value,
             "sale_price": request.subject_property.estimated_value or 0
         }
@@ -166,14 +160,12 @@ async def get_optimized_recommendations(request: SmartAppraisalRequest):
                     "property": {
                         "id": rec['property'].get('id'),
                         "address": rec['property'].get('address'),
-                        "property_type": rec['property'].get('structure_type'),
+                        "structure_type": rec['property'].get('structure_type'),
                         "gla": rec['property'].get('gla'),
                         "lot_size": rec['property'].get('lot_size'),
                         "bedrooms": rec['property'].get('bedrooms'),
                         "bathrooms": rec['property'].get('bathrooms'),
                         "year_built": rec['property'].get('year_built'),
-                        "condition": "Average",  # Default for real dataset
-                        "quality": "Average",    # Default for real dataset
                         "latitude": rec['property'].get('latitude'),
                         "longitude": rec['property'].get('longitude'),
                         "sale_date": rec['property'].get('close_date'),

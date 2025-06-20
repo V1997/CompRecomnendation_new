@@ -1,26 +1,20 @@
-// Types for the property valuation system
+// Types for the property valuation system - Streamlined to match ML usage
 export interface Property {
   id: string;
   address: string;
   saleDate?: string;
   salePrice?: number;
-  propertyType: string;
   structureType: string;
   gla: number; // Gross Living Area
   lotSize: number;
   bedrooms: number;
   bathrooms: number;
   yearBuilt: number;
-  condition: string;
-  quality: string;
   latitude: number;
   longitude: number;
-  neighborhood?: string;
-  features?: string[];
 }
 
 export interface SubjectProperty extends Property {
-  appraisalDate: string;
   estimatedValue?: number;
 }
 
@@ -31,7 +25,6 @@ export interface CompProperty extends Property {
   adjustments?: {
     glaAdjustment: number;
     lotSizeAdjustment: number;
-    conditionAdjustment: number;
     locationAdjustment: number;
     timeAdjustment: number;
   };
@@ -56,38 +49,27 @@ export interface AppraisalRequest {
   subject_property: {
     id: string;
     address: string;
-    property_type: string;
     structure_type: string;
     gla: number;
     lot_size: number;
     bedrooms: number;
     bathrooms: number;
     year_built: number;
-    condition: string;
-    quality: string;
     latitude: number;
     longitude: number;
-    neighborhood?: string;
-    features?: string[];
-    appraisal_date: string;
     estimated_value?: number;
   };
   candidate_properties: {
     id: string;
     address: string;
-    property_type: string;
     structure_type: string;
     gla: number;
     lot_size: number;
     bedrooms: number;
     bathrooms: number;
     year_built: number;
-    condition: string;
-    quality: string;
     latitude: number;
     longitude: number;
-    neighborhood?: string;
-    features?: string[];
     sale_date: string;
     sale_price: number;
   }[];
@@ -99,39 +81,28 @@ export interface AppraisalResponse {
   subject_property: {
     id: string;
     address: string;
-    property_type: string;
     structure_type: string;
     gla: number;
     lot_size: number;
     bedrooms: number;
     bathrooms: number;
     year_built: number;
-    condition: string;
-    quality: string;
     latitude: number;
     longitude: number;
-    neighborhood?: string;
-    features?: string[];
-    appraisal_date: string;
     estimated_value?: number;
   };
   recommendations: {
     property: {
       id: string;
       address: string;
-      property_type: string;
       structure_type: string;
       gla: number;
       lot_size: number;
       bedrooms: number;
       bathrooms: number;
       year_built: number;
-      condition: string;
-      quality: string;
       latitude: number;
       longitude: number;
-      neighborhood?: string;
-      features?: string[];
       sale_date: string;
       sale_price: number;
       similarity_score: number;
@@ -140,7 +111,6 @@ export interface AppraisalResponse {
       adjustments?: {
         gla_adjustment: number;
         lot_size_adjustment: number;
-        condition_adjustment: number;
         location_adjustment: number;
         time_adjustment: number;
       };
